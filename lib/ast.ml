@@ -1,13 +1,13 @@
 type t =
-  | Symbol of string
-  | Float of float
   | Integer of int
+  | Float of float
+  | Symbol of string
   | List of t list
 
 let rec print = function
-  | Symbol str -> str
-  | Float num -> string_of_float num
   | Integer num -> string_of_int num
+  | Float num -> string_of_float num
+  | Symbol str -> str
   | List exprs ->
     let str =
       exprs

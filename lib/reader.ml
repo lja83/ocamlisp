@@ -19,11 +19,11 @@ let close_paren = make_parser (fun x -> x = ')')
 let delimiter = eof <|> whitespace <|> close_paren
 let dot = make_parser (fun x -> x = '.')
 
-let symbol =
-  let* _ = peek alpha in
-  let* sym = string_of (many1 (alpha <|> digit)) in
+let integer =
+  let int_of = map_opt int_of_string_opt in
+  let* num = int_of (many1 (digit)) in
   let* _ = peek delimiter in
-  return (Ast.Symbol sym)
+  return (Ast.Integer num)
 
 let float =
   let float_of = map_opt float_of_string_opt in
@@ -31,11 +31,11 @@ let float =
   let* _ = peek delimiter in
   return (Ast.Float num)
 
-let integer =
-  let int_of = map_opt int_of_string_opt in
-  let* num = int_of (many1 (digit)) in
+let symbol =
+  let* _ = peek alpha in
+  let* sym = string_of (many1 (alpha <|> digit)) in
   let* _ = peek delimiter in
-  return (Ast.Integer num)
+  return (Ast.Symbol sym)
 
 let rec list s =
   (let* _ = open_paren in
