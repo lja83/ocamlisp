@@ -8,6 +8,9 @@ let is_alpha ch =
   let lower = Char.lowercase_ascii ch in
   'a' <= lower && lower <= 'z'
 
+let is_symbol_char =
+  String.contains "+-*/"
+
 let is_whitespace =
   String.contains " \n"
 
@@ -18,6 +21,7 @@ let open_paren = make_parser (fun x -> x = '(')
 let close_paren = make_parser (fun x -> x = ')')
 let delimiter = eof <|> whitespace <|> close_paren
 let dot = make_parser (fun x -> x = '.')
+let syms = make_parser is_symbol_char
 
 let integer =
   let int_of = map_opt int_of_string_opt in
@@ -32,8 +36,8 @@ let float =
   return (Ast.Float num)
 
 let symbol =
-  let* _ = peek alpha in
-  let* sym = string_of (many1 (alpha <|> digit)) in
+  let* _ = peek (alpha <|> syms) in
+  let* sym = string_of (many1 (alpha <|> digit <|> syms)) in
   let* _ = peek delimiter in
   return (Ast.Symbol sym)
 
@@ -52,3 +56,13 @@ and sexp s =
   s
 
 let read = parse_string sexp
+
+let rec repl () =
+  let s = read_line () in
+  let response =
+    match read s with
+    | Some (ast, _) -> Ast.print (Ast.eval ast)
+    | None -> "Bad input"
+  in
+  Printf.printf "%s\n" response;
+  repl ()
